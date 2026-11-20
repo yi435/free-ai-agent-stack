@@ -1,14 +1,12 @@
 # Free AI Agent Stack
 
-**Free AI Agent Stack** is a guide that shows how to use AI coding agents without paying for model API access.
+**Free AI Agent Stack** shows how to use AI coding agents without paying for model API access.
 
-When you use an AI coding agent to read files, write code, or fix bugs, the agent sends many requests to an AI model. If you use only one free provider, you can quickly hit usage limits or wait in long queues.
-
-This project uses **[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** as a local routing program on your computer. OmniRoute connects free model offerings from three providers—**NVIDIA NIM**, **OpenCode Zen**, and **OpenRouter Free**—behind one local address. Your AI coding agent sends requests to OmniRoute, and OmniRoute forwards them to your chosen provider.
+It uses **[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** as a local router on your computer to connect free model offerings from **NVIDIA NIM**, **OpenCode Zen**, and **OpenRouter Free** behind a single local endpoint. Your coding agent connects once to OmniRoute, which handles model priority and fallback across providers.
 
 ---
 
-## Architecture Diagram
+## Architecture
 
 ```mermaid
 flowchart LR
@@ -17,7 +15,7 @@ flowchart LR
         HA["Hermes Agent"]
     end
 
-    subgraph Router["Local Routing Layer"]
+    subgraph Router["Local Router"]
         OR["OmniRoute"]
     end
 
@@ -35,45 +33,39 @@ flowchart LR
     OR --> ORF
 ```
 
-**OpenCode** and **Hermes Agent** are the two coding agents demonstrated in this guide. They are examples, not the only compatible tools.
+**OpenCode** and **Hermes Agent** are the two agents demonstrated in this repository. Other tools that support custom OpenAI-compatible endpoints may also work.
 
 ---
 
-## Project Files
+## Repository Structure
 
 ```text
 Free-AI-Agent-Stack/
-│
 ├── README.md
 ├── AI_SETUP_PROMPT.md
-│
 ├── docs/
 │   ├── HOW_IT_WORKS.md
 │   ├── PROS_AND_CONS.md
 │   └── MANUAL_SETUP.md
-│
 └── LICENSE
 ```
 
-* **[`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md)**: Understand how the setup works and how requests move from your agent to the models.
-* **[`docs/PROS_AND_CONS.md`](docs/PROS_AND_CONS.md)**: Read an honest evaluation of the benefits, limits, and privacy rules.
-* **[`docs/MANUAL_SETUP.md`](docs/MANUAL_SETUP.md)**: Learn how to configure every part of the setup yourself.
-* **[`AI_SETUP_PROMPT.md`](AI_SETUP_PROMPT.md)**: Copy this prompt into an installed AI coding agent so it can help configure everything with you.
-* **[`LICENSE`](LICENSE)**: MIT License for this repository.
+* **[`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md)** — How OmniRoute, the providers, and priority/fallback routing fit together.
+* **[`docs/PROS_AND_CONS.md`](docs/PROS_AND_CONS.md)** — Advantages, limitations, and privacy considerations.
+* **[`docs/MANUAL_SETUP.md`](docs/MANUAL_SETUP.md)** — Configuration reference for setting up the stack manually.
+* **[`AI_SETUP_PROMPT.md`](AI_SETUP_PROMPT.md)** — Prompt to give an already-installed AI coding agent to configure the setup with you.
+* **[`LICENSE`](LICENSE)** — MIT License.
 
 ---
 
-## Where Should I Start?
+## Where to Start
 
-You can set up this project in two ways:
+Choose one of two paths:
 
-1. **Manual setup**: Read **[`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md)** and **[`docs/MANUAL_SETUP.md`](docs/MANUAL_SETUP.md)** to configure OmniRoute, your providers, and your AI agent step by step.
-2. **AI-assisted setup**: First install an AI coding agent on your computer, then give it the prompt inside **[`AI_SETUP_PROMPT.md`](AI_SETUP_PROMPT.md)**.
+* **Manual setup**: Read **[`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md)** and follow **[`docs/MANUAL_SETUP.md`](docs/MANUAL_SETUP.md)**.
+* **AI-assisted setup**: Install an AI coding agent first, then give it the prompt in **[`AI_SETUP_PROMPT.md`](AI_SETUP_PROMPT.md)**. The prompt cannot run on its own without an installed agent.
 
-> [!IMPORTANT]
-> **The AI setup prompt cannot run by itself.** It is a text instruction for an AI coding agent. Before you can use [`AI_SETUP_PROMPT.md`](AI_SETUP_PROMPT.md), you must already have an AI coding agent installed on your computer that can read files and run commands with your permission.
-
-### Official Tool Links
+### Official Links
 
 * **OmniRoute**: [https://github.com/diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute)
 * **OpenCode**: [https://opencode.ai/](https://opencode.ai/)
@@ -81,10 +73,6 @@ You can set up this project in two ways:
 
 ---
 
-## Short Limitations Notice
+## Limitations Notice
 
-* **Free limits change**: Providers can change their free usage limits or remove free models at any time.
-* **Models run in the cloud**: OmniRoute runs on your computer, but the AI models run on the provider's remote servers.
-* **Check privacy policies**: Because your prompts and code are sent to external servers, always check a provider's privacy policy before sending private or sensitive information.
-
-Read **[`docs/PROS_AND_CONS.md`](docs/PROS_AND_CONS.md)** for a full explanation of these limitations.
+Free model catalogs and rate limits change frequently. OmniRoute runs locally, but model inference runs on the providers' remote servers—check each provider's privacy policy before sending sensitive code. See **[`docs/PROS_AND_CONS.md`](docs/PROS_AND_CONS.md)** for details.

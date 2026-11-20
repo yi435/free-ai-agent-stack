@@ -1,138 +1,75 @@
 # Manual Setup Guide
 
-This guide explains how to configure the **Free AI Agent Stack** yourself.
+This guide is a configuration reference for setting up **Free AI Agent Stack** manually.
 
-Instead of giving you terminal commands to copy and paste without explanation, this page explains **what** needs to be installed, **where** each setting is configured, and **why** each part matters.
-
-* If you want to understand the overall architecture first, read **[`docs/HOW_IT_WORKS.md`](HOW_IT_WORKS.md)**.
-* If you already have an AI coding agent installed and want it to configure the setup with you, use **[`AI_SETUP_PROMPT.md`](../AI_SETUP_PROMPT.md)**.
+For architectural background, see **[`docs/HOW_IT_WORKS.md`](HOW_IT_WORKS.md)**. For agent-assisted setup, use **[`AI_SETUP_PROMPT.md`](../AI_SETUP_PROMPT.md)**.
 
 ---
 
-## A. What Needs to Be Installed
+## 1. Required Tools and Links
 
-Before configuring the routing stack, four things are needed:
+Install the following tools using their official documentation:
 
-### 1. Node.js and npm
+* **Node.js and npm**: Required to install and run OmniRoute (check the OmniRoute repo for current version requirements).
+* **OmniRoute**: [https://github.com/diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute)
+* **An AI Coding Agent** (demonstrated examples):
+  * **OpenCode**: [https://opencode.ai/](https://opencode.ai/)
+  * **Hermes Agent**: [https://hermes-agent.nousresearch.com/](https://hermes-agent.nousresearch.com/)
 
-OmniRoute is built with JavaScript and distributed through **npm** (the Node.js package manager). You need a current version of **Node.js** and **npm** installed on your computer whenever required by the current OmniRoute release. Check the [official OmniRoute repository](https://github.com/diegosouzapw/OmniRoute) for the exact Node.js version currently recommended.
+Create free accounts on one or more of the three supported model providers:
 
-### 2. OmniRoute
-
-**[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** is the local routing server. Once installed and started according to its official documentation, it runs on your computer (by default on port `20128`) and gives you:
-
-* A **local Web Dashboard** (`http://127.0.0.1:20128`) where you manage providers, models, and combos in your browser.
-* A **local OpenAI-compatible API endpoint** (`http://127.0.0.1:20128/v1`) where your AI coding agent sends requests.
-
-### 3. An AI Coding Agent
-
-You need at least one AI coding agent installed on your computer. The two examples demonstrated in this project are:
-
-* **[OpenCode](https://opencode.ai/)**
-* **[Hermes Agent](https://hermes-agent.nousresearch.com/)**
-
-Follow the official website for your chosen agent to install it on your operating system.
-
-### 4. Provider Accounts and API Keys
-
-You need a free account and an **API key** from at least one—and ideally all three—of the supported model providers:
-
-* **[NVIDIA NIM](https://build.nvidia.com/)**
-* **[OpenCode Zen](https://opencode.ai/zen)**
-* **[OpenRouter](https://openrouter.ai/)**
-
-You do not need all three providers to start. Even if one provider is unavailable, you can configure OmniRoute with the remaining providers.
+* **NVIDIA NIM**: [https://build.nvidia.com/](https://build.nvidia.com/)
+* **OpenCode Zen**: [https://opencode.ai/zen](https://opencode.ai/zen)
+* **OpenRouter**: [https://openrouter.ai/](https://openrouter.ai/)
 
 ---
 
-## B. Provider Configuration
+## 2. Configuring API Keys in OmniRoute
 
-In OmniRoute, you connect your upstream providers inside the **Providers** section of the local web dashboard (`http://127.0.0.1:20128`).
+When OmniRoute is running locally, open its Web Dashboard (`http://127.0.0.1:20128` by default). You will configure two types of keys:
 
-### What the API Keys Are Used For
-
-There are two different kinds of API keys in this setup:
-
-1. **Provider API keys** (from NVIDIA NIM, OpenCode Zen, and OpenRouter): Entered inside OmniRoute so OmniRoute has permission to call those cloud services on your behalf.
-2. **A local OmniRoute API key**: Created inside OmniRoute's **API Keys** section and given to your AI coding agent so your agent can talk to OmniRoute on your computer.
-
-### 1. Connecting NVIDIA NIM
-
-* **Where to get an API key**: Sign in at [https://build.nvidia.com/](https://build.nvidia.com/), complete any required account verification, and generate an API key from your account settings or any hosted model page.
-* **What to configure in OmniRoute**: Choose the **NVIDIA NIM** (`nvidia`) provider in the OmniRoute dashboard and enter your NVIDIA API key.
-* **Model ID format**: Inside OmniRoute, models from NVIDIA NIM use the prefix `nvidia/` followed by the provider's model name (`nvidia/<model-name>`).
-* **Making it available**: Use OmniRoute's test and sync option for that provider connection so OmniRoute checks your key and loads NVIDIA's current model list.
-
-### 2. Connecting OpenCode Zen
-
-* **Where to get an API key**: Sign in at [https://opencode.ai/zen](https://opencode.ai/zen) and create an API key in your Zen dashboard.
-* **What to configure in OmniRoute**: Choose the **OpenCode Zen** (`opencode-zen`) provider in the OmniRoute dashboard and enter your Zen API key.
-* **Model ID format**: Inside OmniRoute, models from OpenCode Zen use the prefix `opencode-zen/` followed by the model name (`opencode-zen/<model-name>`). Free models in Zen typically end with `-free`.
-* **Making it available**: Test the connection and sync the provider catalog in OmniRoute so you can see which `-free` models are currently active.
-
-### 3. Connecting OpenRouter Free
-
-* **Where to get an API key**: Sign in at [https://openrouter.ai/](https://openrouter.ai/) and create a new key on your account's Keys page. Also check your account's Privacy Settings page, as some free models on OpenRouter require specific data-policy settings to be enabled before they will answer requests.
-* **What to configure in OmniRoute**: Choose the **OpenRouter** (`openrouter`) provider in the OmniRoute dashboard and enter your OpenRouter API key.
-* **Model ID format**: Inside OmniRoute, models from OpenRouter use the prefix `openrouter/` followed by the model name (`openrouter/<model-name>`). To stay at $0 inference cost, only choose models that end with the `:free` suffix.
-* **Making it available**: Test the connection and sync the catalog in OmniRoute to pull the current list of `:free` models.
+1. **Provider API Keys** (**Providers** section in the dashboard):
+   * **NVIDIA NIM** (`nvidia`): Generate an API key at [build.nvidia.com](https://build.nvidia.com/) and save it under the `nvidia` provider.
+   * **OpenCode Zen** (`opencode-zen`): Generate an API key at [opencode.ai/zen](https://opencode.ai/zen) and save it under the `opencode-zen` provider.
+   * **OpenRouter Free** (`openrouter`): Generate an API key at [openrouter.ai](https://openrouter.ai/) and save it under the `openrouter` provider. Check your OpenRouter privacy settings, as some `:free` models require data-policy opt-in to work.
+   * After adding each provider key, run the **Test / Sync** action in the dashboard to verify the connection and fetch its current model catalog.
+2. **Local OmniRoute API Key** (**API Keys** section in the dashboard):
+   * Create a local key for your coding agent to authenticate with OmniRoute.
+   * Store this key in an environment variable named `OMNIROUTE_API_KEY` in your shell profile rather than hardcoding it in config files.
 
 ---
 
-## C. Model Selection
+## 3. Selecting Models
 
-### Finding Currently Available Models
+OmniRoute prefixes every model ID with its provider ID: `<provider>/<model>`.
 
-Free model catalogs change often. Providers add new models, rename existing ones, or retire old free endpoints. Because of this, you should never copy a model ID from an old article without checking whether it still exists.
-
-After you connect and sync your providers in OmniRoute, look at the **Models** list inside the OmniRoute dashboard (or inspect the live catalog returned by OmniRoute's `/v1/models` endpoint). Only pick models that appear in your live synced list and are clearly marked as free on your provider account.
-
-### Tested Models vs. Listed Catalog Models
-
-When selecting models, it helps to separate two things:
-
-* **Listed models**: Any model that appears in a provider's catalog after you sync. Being listed in a catalog does not always mean the model will work for your coding agent right now—some listed models may be temporarily overloaded, restricted to specific clients, or require different account settings.
-* **Tested models**: Models that you have actually sent a test message to through OmniRoute and confirmed that they return a valid answer.
-
-For example, during the testing of this project's setup, several models on **NVIDIA NIM** (such as Nemotron, Mistral Large, and Gemma variants) and `:free` models on **OpenRouter** returned working responses, while some listed `-free` or `:free` models rotated out or returned client restriction errors over time. Always test a candidate model in your own OmniRoute dashboard before relying on it as your primary coding model.
+* **Check live availability**: Free model catalogs and usage limits change often. After syncing your providers in OmniRoute, browse the live **Models** list in the dashboard (or the `/v1/models` endpoint) to see what is currently active.
+* **Filter to free models**: On OpenRouter, select only models ending in `:free`. On OpenCode Zen, select only free models (typically ending in `-free`).
+* **Test before relying on a model**: A model listed in a synced catalog may still be overloaded, restricted to specific clients, or retired upstream. Send a quick test message in the OmniRoute dashboard to confirm a model returns a valid response before adding it to your primary combo.
 
 ---
 
-## D. Priority and Fallback
+## 4. Configuring Priority and Fallback
 
-Once you know which free models work on your connected providers, you can group them into a **Combo** inside OmniRoute's **Combos** section.
+In the **Combos** section of the OmniRoute dashboard, create a combo (such as `best-free-coder`) using the **Priority** strategy.
 
-### What a Priority Combo Does
+Add your verified working models in priority order—for example:
 
-A combo gives a single name—such as `best-free-coder` or `best-free-agent`—to an ordered list of models. When you select the **Priority** strategy for a combo, OmniRoute always tries the models in the exact order you listed them.
+1. A tested model from **NVIDIA NIM** (`nvidia/...`)
+2. A tested `:free` model from **OpenRouter** (`openrouter/...:free`)
+3. A tested `-free` model from **OpenCode Zen** (`opencode-zen/...-free`)
 
-### Simple Example of a Priority List
-
-Suppose you create a combo named `best-free-coder` with three entries:
-
-1. **First priority**: A tested coding/reasoning model from **NVIDIA NIM** (`nvidia/...`).
-2. **Second priority**: A tested `:free` coding model from **OpenRouter** (`openrouter/...:free`).
-3. **Third priority**: A tested `-free` model from **OpenCode Zen** (`opencode-zen/...-free`).
-
-Under normal conditions, every coding request goes to your first priority on NVIDIA NIM. If that model becomes temporarily unavailable or hits a usage limit, OmniRoute's fallback feature can try your second priority on OpenRouter, and then your third priority on OpenCode Zen.
-
-### Realistic Expectations for Fallback
-
-Keep in mind that fallback is helpful, not magic. Whether OmniRoute switches to the next model depends on its current implementation, your configuration, and when the error happens. For example, if a failure occurs after a model has already started streaming an answer back to your agent, or if every model in your combo is rate-limited at the same time, fallback cannot prevent the error. Putting tested models from different providers near the top of your combo gives you the best chance of smooth fallback.
+Ordering models from different providers allows OmniRoute to try the next provider in the list when your first choice is rate-limited or temporarily unavailable.
 
 ---
 
-## E. AI Agent Configuration
+## 5. Connecting an AI Coding Agent
 
-After your priority combos are ready in OmniRoute, the next step is configuring your AI coding agent to send its requests to OmniRoute's local endpoint (`http://127.0.0.1:20128/v1`).
+Point your coding agent at OmniRoute's local OpenAI-compatible endpoint (`http://127.0.0.1:20128/v1`). Always back up your existing configuration file before editing it.
 
-Before editing any existing configuration file for your coding agent, always save a backup copy of the file so you do not lose your previous settings.
+### OpenCode (`opencode.json`)
 
-### 1. Configuring OpenCode (`opencode.json`)
-
-**[OpenCode](https://opencode.ai/)** stores its configuration in a local JSON file (`opencode.json` inside your user configuration directory). Check the official OpenCode documentation for the exact file location on your operating system.
-
-Below is a small example showing the structure of the OmniRoute provider section inside `opencode.json`:
+See the [OpenCode documentation](https://opencode.ai/) for your OS config path (typically `~/.config/opencode/opencode.json` on Linux). Add the `omniroute` provider using `@ai-sdk/openai-compatible` and reference your combo name:
 
 ```json
 {
@@ -157,21 +94,12 @@ Below is a small example showing the structure of the OmniRoute provider section
 }
 ```
 
-#### What Each Field Means
+* `{env:OMNIROUTE_API_KEY}` loads your local router key from the environment at runtime.
+* Add any optional model capability or token `limit` fields supported by your installed OpenCode version.
 
-* **`$schema`**: Points to OpenCode's official configuration schema so editors can validate the file format.
-* **`provider.omniroute`**: Creates a custom provider entry named `omniroute`.
-* **`npm` (`"@ai-sdk/openai-compatible"`)**: Tells OpenCode to use its standard OpenAI-compatible adapter when talking to OmniRoute.
-* **`options.baseURL`**: The local address where OmniRoute listens for OpenAI-compatible API requests (`http://127.0.0.1:20128/v1` by default).
-* **`options.apiKey` (`"{env:OMNIROUTE_API_KEY}"`)**: Tells OpenCode to read your local OmniRoute API key from the `OMNIROUTE_API_KEY` environment variable instead of storing a secret key directly in the JSON file.
-* **`models`**: Lists the OmniRoute combo names (or specific model IDs) that you want to appear inside OpenCode. Setting `"tool_call": true` tells OpenCode that the target supports agent tool calls (such as reading and editing files). You can also define optional token `limit` settings if required by your OpenCode version.
-* **`model`**: Sets the default model (`omniroute/best-free-coder`) that OpenCode selects when it starts.
+### Hermes Agent (`~/.hermes/config.yaml`)
 
-### 2. Configuring Hermes Agent (`config.yaml`)
-
-**[Hermes Agent](https://hermes-agent.nousresearch.com/)** stores its settings in a local YAML file (`~/.hermes/config.yaml`).
-
-Below is a small example showing the relevant sections in `config.yaml`:
+See the [Hermes Agent documentation](https://hermes-agent.nousresearch.com/) for full configuration details. Point the `omniroute` provider to your local endpoint and list your combo names:
 
 ```yaml
 model:
@@ -190,32 +118,22 @@ custom_providers:
       - best-free-coder
 ```
 
-#### What Each Field Means
-
-* **`model.default`**: The name of the OmniRoute combo (or model) Hermes Agent should use by default.
-* **`model.provider`**: Selects `omniroute` as the active provider.
-* **`model.base_url`**: Points Hermes Agent to your local OmniRoute API endpoint (`http://127.0.0.1:20128/v1`).
-* **`providers.omniroute.enabled`**: Turns on the OmniRoute provider integration.
-* **`custom_providers`**: Registers the local OmniRoute endpoint and lists the combo names you created in OmniRoute so you can select them in Hermes Agent. Store your local API key in your environment or Hermes `.env` file rather than writing plaintext keys into `config.yaml`.
+Keep your API key in your environment or Hermes `.env` file rather than hardcoding it in `config.yaml`.
 
 ---
 
-## F. Verification and Troubleshooting
+## 6. Verification and Troubleshooting
 
-### How to Verify Your Setup
+To verify the setup:
 
-Check your setup in three simple steps before starting a real coding task:
+1. Confirm the OmniRoute dashboard (`http://127.0.0.1:20128`) loads in your browser.
+2. Send a short test prompt from your coding agent using your combo.
+3. Check the **Logs** view in the OmniRoute dashboard to confirm the request arrived and was answered by one of your connected providers.
 
-1. **Check that OmniRoute is running**: Open the local OmniRoute web dashboard (`http://127.0.0.1:20128`) in your browser. If the page loads, the local server is running.
-2. **Check your providers and combos**: In the dashboard, confirm that your connected providers (`nvidia`, `opencode-zen`, `openrouter`) show a healthy status and that your priority combo contains only tested, currently available models.
-3. **Send a small test message from your agent**: Start OpenCode or Hermes Agent, ask it a short one-line question, and then check the **Logs** tab in the OmniRoute dashboard. The log will show whether OmniRoute received the request from your agent and which upstream provider answered it.
+### Common Issues
 
-### Common Configuration Mistakes
-
-* **OmniRoute is not running (`Connection Refused`)**: If your coding agent says it cannot connect to `127.0.0.1:20128`, OmniRoute is either stopped or running on a different port than the one written in your agent's `baseURL` setting.
-* **Missing or wrong API key (`Authentication / Unauthorized Error`)**:
-  * If the error happens between your agent and OmniRoute, make sure the `OMNIROUTE_API_KEY` environment variable is set in the same terminal window where you started your agent. *(Never run commands that print your secret key onto the screen; only check whether the variable is set.)*
-  * If the error comes from an upstream provider in OmniRoute's logs, re-check the provider API key you entered for NVIDIA NIM, OpenCode Zen, or OpenRouter in the OmniRoute dashboard.
-* **Missing provider prefix or retired model (`Model Not Found`)**: Inside an OmniRoute combo, every model ID must include its provider prefix (such as `nvidia/...`, `opencode-zen/...`, or `openrouter/...`). If the prefix is correct and you still see a "not found" error, the provider has likely removed or renamed that free model—re-sync the provider in OmniRoute and pick a currently active model.
-* **Account privacy or client restriction (`Forbidden Error`)**: Some free models on OpenRouter fail until you enable the required free-model data settings on OpenRouter's website, and some models on OpenCode Zen only accept requests from specific coding clients. If one model repeatedly fails with a permission error, remove it from your combo or adjust your account settings on that provider's website.
-* **All models in the combo are busy (`Rate Limit Error`)**: It is normal to see occasional rate-limit warnings in OmniRoute's logs when one model is busy and OmniRoute switches to the next model. If your coding agent itself shows a final rate-limit failure, it means every model in your combo is rate-limited at the same time. Wait a moment for the limit to reset, or add verified free models from another supported provider to your combo.
+* **Connection refused**: OmniRoute is not running, or its port does not match the `baseURL` in your agent config.
+* **Unauthorized / authentication error**: Check that `OMNIROUTE_API_KEY` is set in the terminal where you start your agent (check variable presence without printing the secret value to the terminal), and re-test your upstream provider keys in the OmniRoute dashboard.
+* **Model not found**: Ensure every model in your combo includes its provider prefix (`nvidia/...`, `opencode-zen/...`, `openrouter/...`). If a free model was retired upstream, re-sync the provider catalog and replace it.
+* **Forbidden / permission error**: Some OpenRouter `:free` models require enabling free-model data settings on OpenRouter's website, and some OpenCode Zen models restrict which client tools may call them.
+* **All models rate-limited**: If every model in a combo is rate-limited at once, wait for the cooldown to reset or add verified free models from another supported provider.

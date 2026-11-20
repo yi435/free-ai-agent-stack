@@ -1,154 +1,90 @@
 # Free AI Agent Stack
 
-A practical, vendor-neutral documentation guide for running AI coding agents at **$0 inference cost** by combining free model offerings from multiple cloud providers behind [OmniRoute](https://github.com/diegosouzapw/OmniRoute), an open-source local AI router.
+Welcome to the **Free AI Agent Stack**—a beginner-friendly guide to experimenting with AI coding agents without paying for model API access.
 
-> [!NOTE]
-> **Educational Project**: This repository is an educational reference demonstrating how to stack and route free-tier APIs for experimentation and learning. It does **not** provide unlimited usage, guaranteed uptime, or paid frontier-model performance.
+When you use an AI coding agent to explore a codebase, draft changes, or debug errors, a single session can send dozens of requests. Relying on a single free model tier often means running into sudden rate limits or temporary outages right in the middle of a task.
 
----
-
-## Why This Project Exists
-
-Experimenting with agentic coding workflows—where an AI agent reads files, runs tests, and iterates on code—typically consumes large volumes of tokens across multi-turn tool calls. Relying on a single free provider quickly hits rate limits (requests per minute), daily quotas, or sudden model deprecations.
-
-Instead of wiring one provider directly into one coding tool, this stack places **OmniRoute** between your coding agent and multiple upstream providers:
-
-1. **Single Unified Endpoint**: Your coding agent connects once to `http://127.0.0.1:20128/v1`.
-2. **Multi-Provider Aggregation**: You connect your own free accounts from multiple providers to OmniRoute.
-3. **Priority Combos & Fallback**: You define ordered model chains (combos) such as `best-free-coder`, `best-free-agent`, and `best-free-ai`. When the primary model hits a rate limit (`429`) or temporary upstream error (`5xx`), OmniRoute can advance to the next healthy model in the chain.
+This project shows how to place **[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** on your machine as a local routing layer in front of three model providers that offer free access options: **NVIDIA NIM**, **OpenCode Zen**, and **OpenRouter Free**. Your coding agent connects to one local address, while OmniRoute manages provider selection, priority ordering, and fallback when supported.
 
 ---
 
-## Architecture
+## Architecture Overview
 
 ```mermaid
 flowchart LR
-    subgraph Harnesses["AI Coding Agent Harnesses"]
+    subgraph Harnesses["Demonstrated AI Coding Agents"]
         OC["OpenCode"]
         HA["Hermes Agent"]
-        OTHER["Other OpenAI-Compatible Agents<br/>(Aider, Cline, Continue, etc.)"]
     end
 
-    subgraph Router["Local Routing Layer (127.0.0.1:20128)"]
-        OR_API["OmniRoute /v1 Endpoint"]
-        COMBO["Priority Combo Resolver<br/>(best-free-coder / agent / ai)"]
-        FALLBACK["Error Classifier &<br/>Per-Model Cooldown"]
-        OR_API --> COMBO --> FALLBACK
+    subgraph Router["Local Routing Layer"]
+        OR["OmniRoute<br/>(Local OpenAI-Compatible Endpoint)"]
     end
 
-    subgraph Upstreams["Upstream Cloud Providers (Remote Inference)"]
-        NIM["NVIDIA NIM<br/>(integrate.api.nvidia.com)"]
-        OR["OpenRouter Free<br/>(openrouter.ai)"]
-        ORCA["OrcaRouter<br/>(api.orcarouter.ai)"]
-        ZEN["OpenCode Zen<br/>(opencode.ai/zen)"]
-        HC["HuggingChat<br/>(huggingface.co/chat)"]
+    subgraph Providers["Upstream Model Providers (Remote Inference)"]
+        NIM["NVIDIA NIM"]
+        ZEN["OpenCode Zen"]
+        ORF["OpenRouter Free"]
     end
 
-    OC --> OR_API
-    HA --> OR_API
-    OTHER --> OR_API
+    OC --> OR
+    HA --> OR
 
-    FALLBACK -->|"Priority 1..N"| NIM
-    FALLBACK -->|"Priority 1..N"| OR
-    FALLBACK -->|"Priority 1..N"| ORCA
-    FALLBACK -->|"Priority 1..N"| ZEN
-    FALLBACK -.->|"Optional (Web Cookie)"| HC
+    OR -->|"Priority & Fallback"| NIM
+    OR -->|"Priority & Fallback"| ZEN
+    OR -->|"Priority & Fallback"| ORF
 ```
 
+**OpenCode** and **Hermes Agent** are the two coding agent harnesses demonstrated in this repository. They are practical examples rather than the only compatible tools—other agents that support custom OpenAI-compatible endpoints may also work depending on the API features they require.
+
 ---
 
-## Providers & Tools in Scope
+## Repository Structure
 
-### Routing Layer
+Each file in this repository covers one part of the setup:
 
-* **[OmniRoute](https://github.com/diegosouzapw/OmniRoute)**: A local-first, OpenAI-compatible AI gateway (`http://127.0.0.1:20128/v1`) and web dashboard (`http://127.0.0.1:20128`). It stores provider credentials locally in SQLite (`~/.omniroute/storage.sqlite`), normalizes upstream wire formats, and routes requests across named model combos.
+```text
+free-ai-agent-stack/
+├── README.md                  # Project overview and navigation guide
+├── docs/
+│   ├── GETTING_STARTED.md     # Prerequisites and installing an AI coding agent first
+│   ├── HOW_IT_WORKS.md        # Architecture, routing concepts, and request flow
+│   ├── PROS_AND_CONS.md       # Honest evaluation of benefits, limits, and privacy
+│   └── MANUAL_SETUP.md        # Conceptual walkthrough of manual configuration
+├── AI_SETUP_PROMPT.md         # Reusable prompt for automated agent-assisted setup
+└── LICENSE                    # MIT License
+```
 
-### Upstream Model Providers
+### Where Should I Start?
 
-Free access means different things across providers. It is important to distinguish between a **rate-limited developer tier**, a **daily/RPM-capped free catalog**, **shared-pool free models**, and **web-session chat**:
+* **New to AI coding agents?** Start with **[Getting Started](docs/GETTING_STARTED.md)** to learn what you need installed before configuring the router.
+* **Want an AI agent to configure the stack with you?** Read **[Getting Started](docs/GETTING_STARTED.md)** first, then give **[AI Setup Prompt](AI_SETUP_PROMPT.md)** to your installed coding agent.
+* **Want to understand the architecture first?** Read **[How It Works](docs/HOW_IT_WORKS.md)** and **[Pros and Cons](docs/PROS_AND_CONS.md)**.
+* **Prefer configuring everything yourself?** Follow **[Manual Setup](docs/MANUAL_SETUP.md)** for a detailed explanation of every component and setting.
 
-| Provider | Official Link | OmniRoute ID | Auth Method | How the Free Offering Works | Verified Used Models in This Stack |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **NVIDIA NIM** | [build.nvidia.com](https://build.nvidia.com/) | `nvidia` | Bearer API Key (`nvapi-...`) | **Developer rate-limited access**: Free developer tier (~40 RPM limit; subject to account credit/rate policies rather than a fixed monthly token grant). | `nvidia/nemotron-3-ultra-550b-a55b`<br>`mistralai/mistral-large-4-1t-a52b`<br>`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning`<br>`google/gemma-4-31b-it`<br>`poolside/laguna-xs-2.1`<br>`nvidia/nemotron-3.5-lightning-30b-a3b`<br>`nvidia/nemotron-3.5-super-vl-120b-a12b`<br>`stepfun-ai/step-5-preview` |
-| **OpenRouter Free** | [openrouter.ai](https://openrouter.ai/) | `openrouter` | Bearer API Key (`sk-or-...`) | **Free-quota `:free` catalog**: Models suffixed with `:free` cost $0/token but enforce strict per-account rate limits (typically 20 RPM and 200 requests/day on zero-balance accounts). Available `:free` models rotate frequently. | `nvidia/nemotron-3-ultra-550b-a55b:free`<br>`cohere/north-mini-code:free`<br>`nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`<br>`dots-studio/dots-3-note-preview:free`<br>`nvidia/nemotron-3.5-lightning:free`<br>`nvidia/nemotron-3.5-super-vl:free`<br>`recursive/flint-v1.0:free`<br>`xingchen-agi/xing4.0-29b-a4b:free` |
-| **OrcaRouter** | [orcarouter.ai](https://www.orcarouter.ai/) | `orcarouter` | Bearer API Key (`sk-orca-...`) | **Shared-capacity free models**: Models suffixed with `-free` cost $0/token but share upstream pool capacity and frequently return `429` (`free_rate_limited`) under load. | `tencent/hy4-preview-free` |
-| **OpenCode Zen** | [opencode.ai/zen](https://opencode.ai/zen) | `opencode-zen` | Bearer API Key | **Rotating free tier**: Offers selected `-free` models at $0/token alongside paid models. Free models are subject to usage limits (`429 Free usage limit reached`) and periodic catalog rotation. | `mimo-v2.5-free` |
-| **HuggingChat** | [huggingface.co/chat](https://huggingface.co/chat/) | `huggingchat` | Browser `Cookie` Header (`hf-chat`) | **Free web chat session**: Backed by HuggingChat's web interface rather than an official Bearer API. Requires copying session cookies from a browser and is prone to `502 Bad Gateway` errors when cookies expire or hit anti-bot HTML challenges. | *Supported at the provider level; excluded from active priority combos due to web-cookie session fragility.* |
+---
+
+## Prerequisites at a Glance
+
+Before setting up the routing stack, you will need:
+
+* A computer running Linux, macOS, or Windows (native or WSL2).
+* **Node.js** and **npm** to install and run [OmniRoute](https://github.com/diegosouzapw/OmniRoute).
+* An installed AI coding agent harness—such as [OpenCode](https://opencode.ai/) or [Hermes Agent](https://hermes-agent.nousresearch.com/)—especially if you plan to use the automated setup prompt in [`AI_SETUP_PROMPT.md`](AI_SETUP_PROMPT.md).
+* Free accounts with one or more of the three supported model providers: [NVIDIA NIM](https://build.nvidia.com/), [OpenCode Zen](https://opencode.ai/zen), and [OpenRouter](https://openrouter.ai/).
+
+---
+
+## Limitations and Privacy Notice
+
+This project is an educational resource for learning and experimentation. Free model offerings have variable rate limits, changing model catalogs, and inconsistent availability, so they should not be treated as drop-in replacements for paid frontier models.
 
 > [!IMPORTANT]
-> **Always Verify Live Model IDs**: Free-tier model catalogs change without notice. A model that is free and active today may return `404` (not found) or `410` (shut down) next week. Always verify active model identifiers against OmniRoute's `/v1/models` endpoint before adding them to your configuration.
-
-### Compatible AI Coding Agent Harnesses
-
-This guide demonstrates two agent harnesses used by the project author:
-
-* **[OpenCode](https://opencode.ai/)**: An open-source terminal coding agent that connects to OmniRoute via `@ai-sdk/openai-compatible` or OmniRoute's built-in `omniroute setup-opencode` command.
-* **[Hermes Agent](https://hermes-agent.nousresearch.com/)**: Nous Research's autonomous CLI and gateway agent, configured via `~/.hermes/config.yaml`.
-
-**These are examples, not the only compatible tools.** Any AI coding agent or IDE extension that supports a custom OpenAI-compatible Base URL (`http://127.0.0.1:20128/v1`) and Bearer API key—such as Aider, Cline, Continue, Roo Code, Goose, or Claude Code / Codex CLI (via `omniroute run`)—can use this exact setup.
+> **Local Routing Is Not Local Inference**: OmniRoute runs on your computer, but the AI models themselves run on remote cloud servers. Every prompt and code snippet your agent sends is transmitted to the selected upstream provider. Review **[Pros and Cons](docs/PROS_AND_CONS.md)** before using this setup with sensitive or private code.
 
 ---
 
-## General Workflow
+## Official Links & License
 
-1. **Install and start OmniRoute** locally on `127.0.0.1:20128`.
-2. **Create accounts** with the upstream providers you want to use and add their credentials in the OmniRoute dashboard or CLI.
-3. **Sync and verify models** so OmniRoute knows which free models are currently live on each connected provider.
-4. **Create priority combos** (`best-free-coder`, `best-free-agent`, `best-free-ai`) that order your verified free models from first choice to fallback.
-5. **Generate a local OmniRoute API key** (`OMNIROUTE_API_KEY`) and point your coding agent harness at `http://127.0.0.1:20128/v1`.
-6. **Test connectivity** with a minimal request before starting a multi-turn coding session.
-
----
-
-## Prerequisites
-
-* **Operating System**: Linux, macOS, Windows (native or WSL2).
-* **Node.js & npm**: Node.js 20 LTS or newer (Node.js 22+ recommended for built-in `node:sqlite` support).
-* **Command-Line Utilities**: `curl` (for endpoint verification) and `git`.
-* **Provider Accounts**: Free accounts on one or more of the providers in scope (NVIDIA NIM, OpenRouter, OrcaRouter, OpenCode Zen, HuggingChat).
-* **An AI Coding Harness**: [OpenCode](https://opencode.ai/), [Hermes Agent](https://hermes-agent.nousresearch.com/), or another OpenAI-compatible coding client.
-
----
-
-## Limitations & Realistic Expectations
-
-* **Rate Limits & Shared Capacity**: Free tiers enforce strict requests-per-minute (RPM), requests-per-day (RPD), or shared pool capacity limits. During peak hours, free endpoints on OpenRouter, OrcaRouter, and OpenCode Zen regularly return `429 Too Many Requests`.
-* **How Fallback Actually Works**: OmniRoute's priority fallback advances to the next model in a combo when an upstream provider returns a classified retryable or lockout error—such as `429` (rate limit), `402` (plan/quota exhausted), `500`/`502`/`503`/`504` (server error), or `404`/`410` (model unavailable). **Not every error triggers automatic fallback:**
-  * Client-side `400 Bad Request` errors caused by unsupported parameters or malformed tool schemas may fail immediately.
-  * If a failure happens mid-stream *after* SSE tokens have already started streaming to your agent, the router cannot transparently replay the turn on a different model.
-  * If every model in your combo is simultaneously rate-limited, the request will fail until a cooldown window expires.
-* **Model Churn**: Free models are frequently added, renamed, or retired (`404`/`410`). You will occasionally need to re-sync your provider catalogs and update your combo lists.
-* **Tool-Calling & Context Variance**: Not all free models handle complex multi-step tool calling, strict JSON schemas, or large context windows equally well.
-
----
-
-## Privacy & Security Warning
-
-> [!CAUTION]
-> **Local Routing Does Not Mean Local Inference**
->
-> OmniRoute runs locally on your machine (`127.0.0.1:20128`), which means your API keys and routing rules stay in your local database (`~/.omniroute/storage.sqlite`). **However, every prompt, file snippet, tool output, and code diff processed by your coding agent is transmitted over the internet to the upstream cloud provider serving that request.**
-
-Before using this stack on any codebase:
-
-1. **Assume Free Tiers May Log or Train on Prompts**: Data retention, logging, and model-training policies vary by provider and sometimes per model. Several free-tier providers subsidize $0 inference by logging prompts and completions for model evaluation or training unless you explicitly configure zero-data-retention settings (and some free models require data-sharing opt-in to function).
-2. **Never Send Secrets or Confidential Code**: Never route passwords, API keys, `.env` files, private cryptographic keys, customer PII, or proprietary/confidential source code through third-party free tiers without verifying the provider's current terms of service and privacy policy.
-3. **Protect Your Credentials**:
-   * Store your OmniRoute key and upstream provider keys in environment variables (such as `OMNIROUTE_API_KEY`) or local uncommitted `.env` files with restricted permissions (`chmod 600`).
-   * Reference environment variables in agent configs (for example, `"{env:OMNIROUTE_API_KEY}"` in OpenCode) rather than hardcoding plaintext keys.
-   * Always exclude `.env`, `opencode.json` (if it contains keys), `auth.json`, and `*.sqlite` files in `.gitignore`.
-
----
-
-## Setup Guides
-
-Choose the setup path that fits your workflow:
-
-1. **[Manual Setup Guide (`MANUAL_SETUP.md`)](./MANUAL_SETUP.md)**: Complete step-by-step instructions for installing OmniRoute, configuring provider credentials, building the `best-free-coder` / `best-free-agent` / `best-free-ai` priority combos, connecting OpenCode and Hermes Agent, and troubleshooting common upstream HTTP errors.
-2. **[AI-Assisted Setup Prompt (`AI_SETUP_PROMPT.md`)](./AI_SETUP_PROMPT.md)**: A reusable, safety-first prompt you can paste directly into your coding agent so it inspects your OS, asks for your approval before making changes, configures OmniRoute and your harness without exposing API keys, and verifies connectivity.
-
----
-
-## License
-
-This project is released under the [MIT License](./LICENSE).
+* **OmniRoute Repository**: [https://github.com/diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute)
+* **License**: Released under the [MIT License](LICENSE).

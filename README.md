@@ -1,27 +1,27 @@
 # Free AI Agent Stack
 
-Welcome to the **Free AI Agent Stack**—a beginner-friendly guide to experimenting with AI coding agents without paying for model API access.
+**Free AI Agent Stack** is a guide that shows how to use AI coding agents without paying for model API access.
 
-When you use an AI coding agent to explore a codebase, draft changes, or debug errors, a single session can send dozens of requests. Relying on a single free model tier often means running into sudden rate limits or temporary outages right in the middle of a task.
+When you use an AI coding agent to read files, write code, or fix bugs, the agent sends many requests to an AI model. If you use only one free provider, you can quickly hit usage limits or wait in long queues.
 
-This project shows how to place **[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** on your machine as a local routing layer in front of three model providers that offer free access options: **NVIDIA NIM**, **OpenCode Zen**, and **OpenRouter Free**. Your coding agent connects to one local address, while OmniRoute manages provider selection, priority ordering, and fallback when supported.
+This project uses **[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** as a local routing program on your computer. OmniRoute connects free model offerings from three providers—**NVIDIA NIM**, **OpenCode Zen**, and **OpenRouter Free**—behind one local address. Your AI coding agent sends requests to OmniRoute, and OmniRoute forwards them to your chosen provider.
 
 ---
 
-## Architecture Overview
+## Architecture Diagram
 
 ```mermaid
 flowchart LR
-    subgraph Harnesses["Demonstrated AI Coding Agents"]
+    subgraph Agents["AI Coding Agents (Examples)"]
         OC["OpenCode"]
         HA["Hermes Agent"]
     end
 
     subgraph Router["Local Routing Layer"]
-        OR["OmniRoute<br/>(Local OpenAI-Compatible Endpoint)"]
+        OR["OmniRoute"]
     end
 
-    subgraph Providers["Upstream Model Providers (Remote Inference)"]
+    subgraph Providers["Model Providers"]
         NIM["NVIDIA NIM"]
         ZEN["OpenCode Zen"]
         ORF["OpenRouter Free"]
@@ -30,61 +30,61 @@ flowchart LR
     OC --> OR
     HA --> OR
 
-    OR -->|"Priority & Fallback"| NIM
-    OR -->|"Priority & Fallback"| ZEN
-    OR -->|"Priority & Fallback"| ORF
+    OR --> NIM
+    OR --> ZEN
+    OR --> ORF
 ```
 
-**OpenCode** and **Hermes Agent** are the two coding agent harnesses demonstrated in this repository. They are practical examples rather than the only compatible tools—other agents that support custom OpenAI-compatible endpoints may also work depending on the API features they require.
+**OpenCode** and **Hermes Agent** are the two coding agents demonstrated in this guide. They are examples, not the only compatible tools.
 
 ---
 
-## Repository Structure
-
-Each file in this repository covers one part of the setup:
+## Project Files
 
 ```text
-free-ai-agent-stack/
-├── README.md                  # Project overview and navigation guide
+Free-AI-Agent-Stack/
+│
+├── README.md
+├── AI_SETUP_PROMPT.md
+│
 ├── docs/
-│   ├── GETTING_STARTED.md     # Prerequisites and installing an AI coding agent first
-│   ├── HOW_IT_WORKS.md        # Architecture, routing concepts, and request flow
-│   ├── PROS_AND_CONS.md       # Honest evaluation of benefits, limits, and privacy
-│   └── MANUAL_SETUP.md        # Conceptual walkthrough of manual configuration
-├── AI_SETUP_PROMPT.md         # Reusable prompt for automated agent-assisted setup
-└── LICENSE                    # MIT License
+│   ├── HOW_IT_WORKS.md
+│   ├── PROS_AND_CONS.md
+│   └── MANUAL_SETUP.md
+│
+└── LICENSE
 ```
 
-### Where Should I Start?
-
-* **New to AI coding agents?** Start with **[Getting Started](docs/GETTING_STARTED.md)** to learn what you need installed before configuring the router.
-* **Want an AI agent to configure the stack with you?** Read **[Getting Started](docs/GETTING_STARTED.md)** first, then give **[AI Setup Prompt](AI_SETUP_PROMPT.md)** to your installed coding agent.
-* **Want to understand the architecture first?** Read **[How It Works](docs/HOW_IT_WORKS.md)** and **[Pros and Cons](docs/PROS_AND_CONS.md)**.
-* **Prefer configuring everything yourself?** Follow **[Manual Setup](docs/MANUAL_SETUP.md)** for a detailed explanation of every component and setting.
-
----
-
-## Prerequisites at a Glance
-
-Before setting up the routing stack, you will need:
-
-* A computer running Linux, macOS, or Windows (native or WSL2).
-* **Node.js** and **npm** to install and run [OmniRoute](https://github.com/diegosouzapw/OmniRoute).
-* An installed AI coding agent harness—such as [OpenCode](https://opencode.ai/) or [Hermes Agent](https://hermes-agent.nousresearch.com/)—especially if you plan to use the automated setup prompt in [`AI_SETUP_PROMPT.md`](AI_SETUP_PROMPT.md).
-* Free accounts with one or more of the three supported model providers: [NVIDIA NIM](https://build.nvidia.com/), [OpenCode Zen](https://opencode.ai/zen), and [OpenRouter](https://openrouter.ai/).
+* **[`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md)**: Understand how the setup works and how requests move from your agent to the models.
+* **[`docs/PROS_AND_CONS.md`](docs/PROS_AND_CONS.md)**: Read an honest evaluation of the benefits, limits, and privacy rules.
+* **[`docs/MANUAL_SETUP.md`](docs/MANUAL_SETUP.md)**: Learn how to configure every part of the setup yourself.
+* **[`AI_SETUP_PROMPT.md`](AI_SETUP_PROMPT.md)**: Copy this prompt into an installed AI coding agent so it can help configure everything with you.
+* **[`LICENSE`](LICENSE)**: MIT License for this repository.
 
 ---
 
-## Limitations and Privacy Notice
+## Where Should I Start?
 
-This project is an educational resource for learning and experimentation. Free model offerings have variable rate limits, changing model catalogs, and inconsistent availability, so they should not be treated as drop-in replacements for paid frontier models.
+You can set up this project in two ways:
+
+1. **Manual setup**: Read **[`docs/HOW_IT_WORKS.md`](docs/HOW_IT_WORKS.md)** and **[`docs/MANUAL_SETUP.md`](docs/MANUAL_SETUP.md)** to configure OmniRoute, your providers, and your AI agent step by step.
+2. **AI-assisted setup**: First install an AI coding agent on your computer, then give it the prompt inside **[`AI_SETUP_PROMPT.md`](AI_SETUP_PROMPT.md)**.
 
 > [!IMPORTANT]
-> **Local Routing Is Not Local Inference**: OmniRoute runs on your computer, but the AI models themselves run on remote cloud servers. Every prompt and code snippet your agent sends is transmitted to the selected upstream provider. Review **[Pros and Cons](docs/PROS_AND_CONS.md)** before using this setup with sensitive or private code.
+> **The AI setup prompt cannot run by itself.** It is a text instruction for an AI coding agent. Before you can use [`AI_SETUP_PROMPT.md`](AI_SETUP_PROMPT.md), you must already have an AI coding agent installed on your computer that can read files and run commands with your permission.
+
+### Official Tool Links
+
+* **OmniRoute**: [https://github.com/diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute)
+* **OpenCode**: [https://opencode.ai/](https://opencode.ai/)
+* **Hermes Agent**: [https://hermes-agent.nousresearch.com/](https://hermes-agent.nousresearch.com/)
 
 ---
 
-## Official Links & License
+## Short Limitations Notice
 
-* **OmniRoute Repository**: [https://github.com/diegosouzapw/OmniRoute](https://github.com/diegosouzapw/OmniRoute)
-* **License**: Released under the [MIT License](LICENSE).
+* **Free limits change**: Providers can change their free usage limits or remove free models at any time.
+* **Models run in the cloud**: OmniRoute runs on your computer, but the AI models run on the provider's remote servers.
+* **Check privacy policies**: Because your prompts and code are sent to external servers, always check a provider's privacy policy before sending private or sensitive information.
+
+Read **[`docs/PROS_AND_CONS.md`](docs/PROS_AND_CONS.md)** for a full explanation of these limitations.

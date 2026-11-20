@@ -1,147 +1,159 @@
 # How It Works
 
-This document explains the architecture behind the **Free AI Agent Stack**: what each component does, how requests travel from your coding agent to an AI model and back, and how priority routing and fallback work in practice.
+This page explains how the **Free AI Agent Stack** works. Reading this first will help you understand what each tool does before you configure anything.
 
 ---
 
-## 1. The Core Problem with Single-Provider Free Tiers
+## 1. What Is OmniRoute?
 
-Connecting an AI coding agent directly to a single free model provider is simple, but it tends to break down quickly during real coding sessions.
+**[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** is a small server program that runs on your own computer. It acts as a bridge between your AI coding agent and external AI model providers.
 
-Agentic workflows are chatty. A single task—such as explaining an error and updating two files—often involves multiple back-and-forth turns containing system instructions, file contents, and tool calls. When all of those requests hit one free provider directly:
+When OmniRoute is running, it provides two main things on your computer:
 
-* You can quickly reach that provider's requests-per-minute or daily usage cap.
-* Free community pools can become congested during peak hours.
-* When a provider retires or renames a free model, you have to edit your coding agent's configuration files manually to switch to a different model or provider.
-
----
-
-## 2. Why Use OmniRoute as a Local Routing Layer?
-
-**[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** sits between your coding agent and the upstream cloud providers. Instead of teaching your coding agent how to talk to three different services and manually switching when one fails, you point your coding agent at OmniRoute's local endpoint once.
-
-OmniRoute acts as a local traffic controller:
-
-* **Unified Local Endpoint**: It exposes an OpenAI-compatible API on your local machine (by default at `http://127.0.0.1:20128/v1`) along with a local web dashboard (`http://127.0.0.1:20128`).
-* **Centralized Provider Connections**: You register your upstream provider accounts inside OmniRoute rather than scattering API keys across multiple coding tools.
-* **Virtual Model Combos**: It lets you group multiple models from different providers under a single name (a **combo**), ordered by priority.
-* **Protocol Normalization**: It translates requests and responses between your agent and the selected upstream provider.
+* **A local web dashboard**: A page you open in your browser to add provider accounts, choose models, and view request logs.
+* **A local API endpoint**: A local web address (an *endpoint*) that uses the standard OpenAI API format so your AI coding agent can talk to it.
 
 ---
 
-## 3. Request Flow
+## 2. Why Use a Local Routing Layer?
 
-Every time you send a message in your coding agent, the request follows a five-stage path:
+A **routing layer** is a program that receives a request and decides where to send it.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant Agent as AI Coding Agent<br/>(OpenCode / Hermes Agent)
-    participant Router as OmniRoute<br/>(Local Router on 127.0.0.1:20128)
-    participant P1 as Primary Provider<br/>(e.g., NVIDIA NIM)
-    participant P2 as Fallback Provider<br/>(e.g., OpenRouter Free / OpenCode Zen)
+If you connect your coding agent directly to one free provider, you have to edit your agent's settings every time that provider reaches its usage limit or removes a free model.
 
-    Agent->>Router: 1. Send OpenAI-compatible request (target: priority combo)
-    Router->>Router: 2. Resolve combo list & pick highest-priority healthy model
-    Router->>P1: 3. Forward prompt & tool definitions using Provider 1 API key
-    alt Primary model succeeds
-        P1-->>Router: 4a. Stream model response
-    else Primary model returns eligible retry/cooldown error
-        P1-->>Router: 4b. Return rate-limit or unavailable status
-        Router->>P2: 4c. Advance to next model in combo
-        P2-->>Router: 4d. Stream model response
-    end
-    Router-->>Agent: 5. Deliver normalized response to coding agent
-```
+With OmniRoute sitting in the middle:
 
-In short:
-
-**AI Agent $\rightarrow$ OmniRoute $\rightarrow$ Selected Provider $\rightarrow$ Model Response $\rightarrow$ AI Agent**
+* You connect your coding agent to **one local address** once.
+* You can connect **multiple providers** inside OmniRoute.
+* You can switch models or fall back to another provider without changing your coding agent's settings.
 
 ---
 
-## 4. The Three Providers in This Architecture
+## 3. What Are Model Providers?
 
-This project combines free offerings from three providers. Each provider structures its free access differently:
-
-### NVIDIA NIM (`nvidia`)
-
-**[NVIDIA NIM](https://build.nvidia.com/)** provides developer access to hosted inference endpoints for open-weights and partner models. Authentication uses a standard Bearer API key. Free access is governed by developer account terms and rate limits, which can change over time.
-
-### OpenCode Zen (`opencode-zen`)
-
-**[OpenCode Zen](https://opencode.ai/zen)** is a model gateway curated for coding agents. Alongside paid models, it offers selected free-tier models (commonly identified by a `-free` suffix). Free usage is subject to provider limits, and the specific models offered for free rotate periodically. Some models on OpenCode Zen may also enforce client or harness restrictions.
-
-### OpenRouter Free (`openrouter`)
-
-**[OpenRouter](https://openrouter.ai/)** aggregates models from many host providers behind one API. Models in its free catalog use the `:free` suffix and are billed at $0 per token, subject to per-account rate limits and daily request caps. Because upstream hosts add and retire free endpoints frequently, OpenRouter's `:free` catalog changes over time.
+A **model provider** is an online service that hosts AI models on powerful cloud servers and lets programs send prompts to those models over the internet using an **API key** (a secret password for programs).
 
 ---
 
-## 5. Understanding Model Identifiers
+## 4. Roles of the Three Providers in This Setup
 
-When you connect multiple providers to OmniRoute, two different providers might host the same underlying model. To keep every target unambiguous, OmniRoute prefixes the provider's identifier onto the upstream model's identifier:
+This setup uses free offerings from three providers. Each one gives free access in a slightly different way:
+
+* **[NVIDIA NIM](https://build.nvidia.com/)**: An API platform from NVIDIA that lets developers test hosted open-weights and partner AI models. Free usage is controlled by developer account rules and rate limits (how many requests you can send in a short time).
+* **[OpenCode Zen](https://opencode.ai/zen)**: A model service built for coding agents. It offers a few free models (often ending with `-free`) alongside paid models. The free models have usage limits and can change over time.
+* **[OpenRouter Free](https://openrouter.ai/)**: A service that gives access to many AI models through one account. Models that end with `:free` cost $0 per token, but they have daily and per-minute request limits.
+
+---
+
+## 5. What Is a Model ID?
+
+A **model ID** (model identifier) is the exact name a program uses to ask for a specific AI model.
+
+Because OmniRoute connects to multiple providers at the same time, it combines the **provider name** and the **provider's model name** with a slash (`/`):
 
 ```text
-<provider-id>/<upstream-model-id>
+<provider-name>/<model-name>
 ```
 
 For example:
 
-* If **NVIDIA NIM** (`nvidia`) hosts a model named `nvidia/nemotron-3-ultra-550b-a55b`, OmniRoute refers to it as `nvidia/nvidia/nemotron-3-ultra-550b-a55b`.
-* If **OpenRouter** (`openrouter`) hosts a free variant named `nvidia/nemotron-3-ultra-550b-a55b:free`, OmniRoute refers to it as `openrouter/nvidia/nemotron-3-ultra-550b-a55b:free`.
-* If **OpenCode Zen** (`opencode-zen`) hosts a model named `mimo-v2.5-free`, OmniRoute refers to it as `opencode-zen/mimo-v2.5-free`.
+* A model hosted on **NVIDIA NIM** (`nvidia`) begins with `nvidia/...`
+* A free model hosted on **OpenCode Zen** (`opencode-zen`) begins with `opencode-zen/...`
+* A free model hosted on **OpenRouter** (`openrouter`) begins with `openrouter/...` and ends with `:free`.
 
-Wait before copying any model identifier from documentation into your own configuration: **model catalogs are dynamic**. A model identifier that worked when a guide was written may be renamed or retired later. You should always inspect the live catalog returned by your connected providers before finalizing your setup.
-
----
-
-## 6. Priority-Based Routing and Fallback
-
-Instead of telling your coding agent to call a single hardcoded provider model, you can create a **Combo** in OmniRoute using a **priority** strategy.
-
-### How Priority Selection Works
-
-A priority combo is an ordered list of model identifiers—for example, placing a tested NVIDIA NIM model first, an OpenRouter `:free` model second, and an OpenCode Zen `-free` model third.
-
-When your coding agent sends a request targeting that combo name, OmniRoute always checks the list from top to bottom and selects the first model that is currently marked healthy (not in a temporary cooldown window).
-
-### How Fallback Works Conceptually
-
-When the first model in a priority combo cannot fulfill a request, OmniRoute can place that model or connection into a temporary cooldown and try the next entry in the combo.
-
-It is important to distinguish what fallback can and cannot do:
-
-* **Pre-response upstream failures**: In the verified OmniRoute implementation, upstream failures such as rate-limit responses, quota exhaustion, temporary server errors, or missing-model responses before streaming starts can trigger a cooldown and advance to the next model in a priority combo. For multi-model catalog providers like NVIDIA NIM, OpenRouter, and OpenCode Zen, OmniRoute can cool down an individual unavailable model without disabling other models on the same provider account.
-* **Not every error triggers fallback**: If your coding agent sends a request with invalid parameters that is rejected immediately as a bad request, or if every model in your combo is rate-limited at the same time, fallback cannot recover the request.
-* **Mid-stream interruptions**: Once an upstream model has started streaming response tokens back to your coding agent, a network drop or mid-generation error cannot be transparently replayed on a different model without the coding agent retrying the turn.
+Because providers add and remove free models often, a model ID that works today might not exist next month. You should always check the live model list inside OmniRoute rather than trusting an old list.
 
 ---
 
-## 7. How AI Harnesses Communicate with OmniRoute
+## 6. How Does an AI Agent Communicate with OmniRoute?
 
-An AI coding harness communicates with OmniRoute the same way it would communicate with any OpenAI-compatible API server. It needs three pieces of information:
+Most AI coding tools know how to speak the **OpenAI API format**, which is a common standard for sending chat messages and tool calls to AI models.
 
-1. **Base URL**: The local address where OmniRoute listens for OpenAI-compatible requests (default `http://127.0.0.1:20128/v1`).
-2. **API Key**: A local authentication key generated in OmniRoute (stored in an environment variable such as `OMNIROUTE_API_KEY`) so your harness does not need to know your upstream provider keys.
-3. **Model Name**: The name of the OmniRoute priority combo (or specific `provider/model` identifier) you want the agent to use.
+To talk to OmniRoute, your AI coding agent only needs three settings:
 
-In this repository:
+1. **Base URL**: The local address where OmniRoute is listening on your computer.
+2. **API Key**: A local key created inside OmniRoute so your agent is allowed to connect.
+3. **Model Name**: The name of the model (or model group) you want OmniRoute to use.
 
-* **[OpenCode](https://opencode.ai/)** connects through its `@ai-sdk/openai-compatible` provider configuration (`opencode.json`), referencing the local OmniRoute endpoint, environment variable key, and combo names.
-* **[Hermes Agent](https://hermes-agent.nousresearch.com/)** connects through its local `config.yaml` file, pointing its model provider settings to the local OmniRoute endpoint and combo names.
+### Basic Request Flow
 
-Other coding agents that support custom OpenAI-compatible endpoints follow the same pattern, though behavior depends on whether the upstream free models support the specific tool-calling or context requirements of that harness.
+Every time you ask your coding agent to do a task, five steps happen:
+
+1. **You give a task** to your AI coding agent.
+2. **The agent sends a request** to your local OmniRoute address.
+3. **OmniRoute selects** a configured provider and model.
+4. **The provider processes the request** on its remote servers.
+5. **The response returns** through OmniRoute back to your coding agent.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User as Developer
+    participant Agent as AI Coding Agent
+    participant Router as OmniRoute (Local)
+    participant Provider as Model Provider (Cloud)
+
+    User->>Agent: 1. Give a coding task
+    Agent->>Router: 2. Send request to local endpoint
+    Router->>Provider: 3. Select provider & model and forward request
+    Provider-->>Router: 4. Process request on cloud servers
+    Router-->>Agent: 5. Return model response to agent
+```
 
 ---
 
-## 8. Local Routing vs. Local Inference
+## 7. What Is Priority-Based Routing?
 
-One of the most common misconceptions about local AI routers is confusing **local routing** with **local inference**.
+In OmniRoute, you can create a **Combo**, which is a custom list of models grouped under one name (for example, `best-free-coder`).
 
-| Concept | Where It Runs | What Happens to Your Data |
-| :--- | :--- | :--- |
-| **Local Routing** *(OmniRoute)* | On your own computer (`127.0.0.1`) | Your routing rules and provider connections live locally, and your coding agent connects to a local port. |
-| **Remote Cloud Inference** *(NVIDIA NIM, OpenCode Zen, OpenRouter Free)* | On external cloud servers operated by the provider or its hosts | Your prompts, code snippets, file contents, and tool outputs are sent over the internet to the selected provider to generate a response. |
+When you choose **priority-based routing** for that combo, the order of the list matters:
 
-Running OmniRoute locally does **not** run the AI models on your hardware. Every prompt processed through this setup leaves your machine and is handled by the upstream provider selected for that request. See **[Pros and Cons](PROS_AND_CONS.md)** for a full discussion of privacy and data-handling implications.
+* **Choice 1**: Your favorite free model from Provider A.
+* **Choice 2**: A backup free model from Provider B.
+* **Choice 3**: Another free model from Provider C.
+
+Whenever your coding agent asks for `best-free-coder`, OmniRoute checks the list from top to bottom and picks the highest-ranked model that is currently available.
+
+---
+
+## 8. What Is Fallback?
+
+**Fallback** is what happens when your first-choice model cannot answer right now, and OmniRoute automatically tries the next model in your priority list.
+
+### A Simple Example
+
+Imagine **Choice 1** on NVIDIA NIM reaches its per-minute rate limit while you are coding. Instead of stopping your work immediately, OmniRoute can temporarily pause Choice 1 and send the request to **Choice 2** on OpenRouter Free.
+
+### Important Limits of Fallback
+
+Do not expect every error to trigger fallback automatically. Whether fallback happens depends on OmniRoute's current implementation, your settings, and the type of error:
+
+* If a provider rejects a request before generating an answer (for example, because a limit was reached or a service is temporarily busy), OmniRoute can often try the next model in the list.
+* If a model has already started sending words back to your agent and the connection drops halfway through, the router cannot smoothly restart that answer on a different model by itself.
+* If every model in your priority list has reached its free limit at the same time, the request will still fail until one of the limits resets.
+
+---
+
+## 9. How OpenCode and Hermes Agent Fit Into This Setup
+
+An **AI coding agent** is the program you run in your terminal to read your project files, run commands, and apply code changes.
+
+This project demonstrates two AI coding agents:
+
+* **[OpenCode](https://opencode.ai/)**: An open-source terminal coding agent configured with a local JSON file (`opencode.json`).
+* **[Hermes Agent](https://hermes-agent.nousresearch.com/)**: A command-line coding and assistant agent configured with a local YAML file (`config.yaml`).
+
+Neither agent runs the AI model itself. Both agents act as the user interface on your computer and send their model requests to OmniRoute. Other coding tools that support custom OpenAI-compatible endpoints can also be used if OmniRoute and the selected free models support the API features those tools require.
+
+---
+
+## 10. Local Routing vs. Local Inference
+
+It is very important to understand the difference between **local routing** and **local inference**:
+
+* **Local routing** means the traffic controller (**OmniRoute**) runs on your computer. It decides which provider receives your request.
+* **Local inference** means the AI model itself runs on your computer's own processor or graphics card without using the internet.
+
+**This setup uses local routing, not local inference.**
+
+Even though your coding agent connects to a local address on your computer, OmniRoute forwards your prompts and code over the internet to **NVIDIA NIM**, **OpenCode Zen**, or **OpenRouter Free**. To understand what this means for privacy and daily use, read **[`docs/PROS_AND_CONS.md`](PROS_AND_CONS.md)** next.

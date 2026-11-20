@@ -1,88 +1,86 @@
 # Pros and Cons
 
-Combining free model offerings behind a local router is a practical way to explore agentic coding workflows, but it comes with real trade-offs. This page provides an honest look at where this architecture shines and where it falls short so you can decide whether it fits your needs.
+This page gives an honest look at the strengths and weaknesses of the **Free AI Agent Stack**. Read this before you start so you know what to expect.
 
 ---
 
 ## Advantages
 
-### 1. $0 Inference Cost for Learning and Experimentation
+### 1. Practice with AI Coding Agents for Free
 
-AI coding agents can consume large numbers of tokens rapidly as they read files, reason through tasks, and call tools. By combining free offerings from **NVIDIA NIM**, **OpenCode Zen**, and **OpenRouter Free**, students, hobbyists, and developers can experiment with agentic workflows without paying per-token API bills.
+AI coding agents send many requests during a single coding task. By using free offerings from **NVIDIA NIM**, **OpenCode Zen**, and **OpenRouter Free**, students and developers can practice using AI agents without paying monthly subscriptions or per-token API bills.
 
-### 2. One Local Endpoint for Multiple Providers
+### 2. Connect Several Providers Through One Address
 
-Instead of reconfiguring your coding agent every time you want to try a different provider, your agent connects once to OmniRoute's local endpoint. You can add, test, or reorder providers in OmniRoute without changing how your coding harness starts up.
+Without a router, switching from one provider to another means editing your coding agent's configuration files each time. With OmniRoute, your coding agent connects to one local address, and you manage all three providers in one place.
 
-### 3. Priority-Based Model Selection
+### 3. Use Different Models for Different Tasks
 
-Priority combos let you rank your preferred free models from strongest to lightest. When your top choice is available, OmniRoute routes requests to it first.
+You can create separate model lists (combos) in OmniRoute for different needs—for example, one combo ordered for writing code and another ordered for quick questions.
 
-### 4. Automatic Fallback Where Supported
+### 4. Priority and Fallback Support
 
-When a primary model returns an eligible rate-limit or availability error before streaming starts, OmniRoute can temporarily cool down that target and try the next model in your priority combo. Routing across three distinct providers makes it less likely that a single provider's rate limit stops your session immediately.
+By putting models from three different providers into a priority list, you do not rely on a single free service. When one provider is busy or reaches a temporary limit, OmniRoute can try the next available model in your list where fallback is supported.
 
-### 5. Flexibility as Free Catalogs Change
+### 5. Easy to Update When Free Models Change
 
-Free models come and go. When a provider adds a new free model or retires an older one, you can update your priority combo in OmniRoute rather than rewriting configuration files across every coding tool you use.
+When a provider removes an old free model or adds a new one, you only need to update your model list inside OmniRoute instead of changing settings in every coding tool you use.
 
-### 6. Hands-On Learning with Multi-Provider Routing
+### 6. Learn How Real AI Routing Works
 
-Building this stack is a practical way to learn how OpenAI-compatible gateways, model identifiers, priority routing, and agent harnesses fit together in modern AI developer tooling.
-
----
-
-## Disadvantages and Limitations
-
-### 1. Free Quotas and Catalogs Change Without Notice
-
-Free access is not a permanent guarantee. Providers regularly adjust their rate limits, daily request allowances, account requirements, and available free models. A model that works reliably today may be rate-limited or retired tomorrow. Check each provider's current documentation for up-to-date terms.
-
-### 2. Rate Limits and Context Constraints
-
-Free tiers enforce stricter request limits and sometimes smaller active context windows than paid tiers. During long multi-turn coding sessions, large file reads or rapid tool calls can still exhaust free allowances across multiple models in a row.
-
-### 3. Variable Model Quality and Tool-Calling Reliability
-
-AI coding agents rely heavily on structured tool calls (such as reading a file or applying a patch in a specific format). Different free models vary significantly in how accurately they follow tool schemas, handle complex debugging tasks, and maintain coherence over long conversations. Furthermore, when fallback switches your session from one model to another mid-task, you may notice a sudden change in coding style or reasoning quality.
-
-### 4. Inconsistent Latency and Availability
-
-Free endpoints often share capacity across many users. During busy periods, responses may take noticeably longer to start, hit queue delays, or fail partway through a turn.
-
-### 5. Provider and Harness Restrictions
-
-Some free endpoints restrict how they can be called. For example, certain free models on a gateway may only allow requests originating from specific approved coding clients or may reject requests that use unsupported API parameters.
-
-### 6. Extra Setup and Maintenance Overhead
-
-Compared to paying for a single commercial API key, a multi-provider free stack requires more ongoing upkeep: running a local router process, managing multiple provider accounts, and periodically pruning retired model identifiers from your combos.
-
-### 7. Not a Drop-In Replacement for Paid Frontier Models
-
-While many free models are capable of helpful code explanation, scripting, and small-to-medium edits, they should not be treated as automatic replacements for paid frontier models on complex, high-stakes software engineering work.
+Setting up OmniRoute is a practical way to learn how OpenAI-compatible endpoints, API keys, model identifiers, and multi-provider routing work in real software projects.
 
 ---
 
-## Privacy and Data-Handling Considerations
+## Disadvantages
 
-> [!CAUTION]
-> **Local Routing Does Not Mean Local Inference**
+### 1. Free Quotas Are Limited
+
+Free accounts have strict limits on how many requests you can send per minute or per day. During a long coding session, it is still possible to hit usage limits across all of your connected free providers.
+
+### 2. Free Models Can Change or Disappear
+
+Providers regularly change which models are offered for free. A model that works today can be removed or switched to a paid tier without warning, which means you will occasionally need to update your model list.
+
+### 3. Free Models Are Not Equal to Paid Frontier Models
+
+Many free models are good at explaining code, writing small scripts, or helping with everyday bugs. However, they are often less reliable than top paid models on very large codebases, hard debugging problems, or long multi-step tool use.
+
+### 4. Rate Limits and Slow Responses Can Interrupt Work
+
+Because many people share free servers, responses can become slow during busy hours, or requests may fail when a server is overloaded.
+
+### 5. Models Behave Differently When Fallback Happens
+
+Each AI model has its own strengths and habits. If your first-choice model hits a limit and OmniRoute switches to a backup model mid-session, you may notice a change in how well the agent follows instructions or formats code changes.
+
+### 6. Initial Setup and Ongoing Maintenance Take Time
+
+Paying for one official API key is fast and rarely needs maintenance. Combining three free providers behind a local router takes more time to set up and requires occasional maintenance when models change.
+
+### 7. Provider Rules and Restrictions
+
+Some free models have extra rules. For example, a provider may restrict certain free models so they only work with specific coding clients, or require you to enable certain account settings before using free endpoints.
+
+---
+
+## Privacy and Security
+
+> [!IMPORTANT]
+> **Local Routing Is Not Local Model Processing**
 >
-> OmniRoute runs on your computer, which keeps your routing configuration local. However, **all model inference happens on remote cloud servers**. Every prompt, file snippet, directory listing, and command output your coding agent sends is transmitted over the internet to the upstream provider handling that request.
+> OmniRoute runs on your computer, but the AI models do **not** run on your computer. Every prompt, file, and code snippet your AI agent reads is sent over the internet to the selected provider (**NVIDIA NIM**, **OpenCode Zen**, or **OpenRouter Free**).
 
-Before using this stack on any project, consider the following:
+Keep these privacy and security points in mind:
 
-* **Provider Data Policies Differ**: Data retention, logging, and model-training policies vary between NVIDIA NIM, OpenCode Zen, and OpenRouter—and on aggregators like OpenRouter, policies can also vary depending on which upstream host serves a specific `:free` model.
-* **Free Tiers Often Trade Cost for Data Usage**: Some free model offerings require allowing prompt logging or training data usage in order to use $0 endpoints, while others have different developer terms. Do not assume that every provider trains on your data, and do not assume that any free endpoint offers zero data retention unless you have verified its current policy and account settings.
-* **Protect Confidential Code and Secrets**: Never use this setup on proprietary codebases, customer data, private keys, passwords, or `.env` files unless you have reviewed and accepted the data-handling policies of every provider in your routing chain.
+* **Providers have different data policies**: Each provider has its own rules about whether prompts are logged, stored, or used to train future AI models. On services like OpenRouter, privacy rules can also depend on which company hosts the specific `:free` model you use.
+* **Check your provider settings**: Some free model tiers require you to allow prompt logging or data sharing in order to use $0 models, while other providers have different developer terms. Do not assume that all providers train on your data, and do not assume that any free provider offers zero data storage unless you have checked its current policy.
+* **Do not send secrets or private code**: Avoid using free cloud providers on confidential company code, private customer data, passwords, or `.env` files containing secret keys unless you have read and accepted the provider's data policy.
+* **Keep your local credentials private**: OmniRoute stores your configuration and provider connection records in a local database file on your computer. Treat your local configuration files and environment variables carefully, and never upload them to GitHub.
 
 ---
 
-## When Is This Setup a Good Fit?
+## Conclusion: Who Is This Setup For?
 
-| Good Fit For | Poor Fit For |
-| :--- | :--- |
-| Learning how AI coding agents and model routers work | Confidential, proprietary, or regulated codebases |
-| Personal side projects, open-source experiments, and coursework | Production engineering workflows requiring guaranteed uptime and consistent frontier-model quality |
-| Testing different open-weights and free-tier models side by side | Users who want a zero-maintenance setup that never needs catalog updates |
+* **This setup is a great choice if** you are a student, hobbyist, or developer who wants to learn how AI coding agents work, build personal or school projects, and experiment with multi-provider routing at $0 cost.
+* **You may prefer paid APIs or local models (running on your own hardware) if** you work on confidential or commercial codebases, need fast and predictable quality every day, or do not want to spend time maintaining changing free model lists.

@@ -11,7 +11,7 @@ This page summarizes the main benefits, limitations, and privacy considerations 
 * **Task-specific model lists**: You can create different combos in OmniRoute for coding, multi-step agent tasks, or quick questions.
 * **Priority and fallback**: Ordering models across multiple providers reduces interruptions when a single free provider hits a temporary rate limit.
 * **Easier catalog updates**: When a free model is added or retired, you update your combo in OmniRoute instead of editing every coding agent's config file.
-* **Practical routing experience**: Setting up the stack is a straightforward way to learn how multi-provider model routing works.
+* A useful project for learning how different model providers can work together through one router.
 
 ---
 

@@ -1,5 +1,8 @@
 # Free AI Agent Stack
-**This project was made by me to find the best free models to utilise**
+
+**This project was made by me to find the best free models to utilise**.
+
+
 **Free AI Agent Stack** shows how to use AI coding agents without paying for model API access.
 
 It uses **[OmniRoute](https://github.com/diegosouzapw/OmniRoute)** as a local router on your computer to connect free model offerings from **NVIDIA NIM**, **OpenCode Zen**, and **OpenRouter Free** behind a single local endpoint. Your coding agent connects once to OmniRoute, which handles model priority and fallback across providers.

@@ -44,7 +44,8 @@ When OmniRoute is running locally, open its Web Dashboard (`http://127.0.0.1:201
 OmniRoute prefixes every model ID with its provider ID: `<provider>/<model>`.
 
 * **Check live availability**: Free model catalogs and usage limits change often. After syncing your providers in OmniRoute, browse the live **Models** list in the dashboard (or the `/v1/models` endpoint) to see what is currently active.
-* **Filter to free models**: On OpenRouter, select only models ending in `:free`. On OpenCode Zen, select only free models (typically ending in `-free`).
+* **Choose a specific free model**: On OpenRouter, look for a `:free` variant and verify its current pricing. On OpenCode Zen, select only free models (typically ending in `-free`).
+* **Distinguish a router from a model**: OpenRouter also offers [`openrouter/free`](https://openrouter.ai/docs/guides/routing/routers/free-router). It selects an available free model compatible with the request; it does not pin a model identity. Use a specific model ID for reproducible benchmarks or a fixed combo slot.
 * **Test before relying on a model**: A model listed in a synced catalog may still be overloaded, restricted to specific clients, or retired upstream. Send a quick test message in the OmniRoute dashboard to confirm a model returns a valid response before adding it to your primary combo.
 
 ---
